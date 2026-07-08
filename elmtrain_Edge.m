@@ -1,7 +1,6 @@
 function [KAN,LW,TF,TYPE,trainInfo] = elmtrain_Edge(P,T,N,TF,TYPE,numKnots,opts)
 %ELMTRAIN_EDGE Train Edge-ManiELM.
 %
-% This public version keeps only the final mixed quadratic-cubic B-spline
 % implementation used in the paper.
 
 if nargin < 2
@@ -31,7 +30,6 @@ end
 opts = complete_edge_options(opts);
 
 % Compatibility for the public release.
-% These fields replace the old debugging-style splineOrder switch.
 if ~isfield(opts,'basisMode')
     opts.basisMode = 'mixed_quadratic_cubic_bspline';
 end
@@ -63,7 +61,6 @@ end
 TF = 'kan';
 
 %% Basis construction
-% The basis setting is fixed as mixed quadratic and cubic B-splines.
 
 xMin = -1;
 xMax =  1;
