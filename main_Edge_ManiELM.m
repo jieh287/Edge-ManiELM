@@ -23,6 +23,8 @@ coord = load_sample_coordinates(coordFile, numSamples);
 fprintf('Loaded dataset: %d samples, %d features.\n', numSamples, numFeatures);
 
 %% Parameter settings
+% The public version keeps only the final Edge-ManiELM setting.
+
 numHiddenNodes = 22;
 numKnots       = 10;
 numFolds       = 5;
@@ -38,11 +40,12 @@ opts.lambda      = 1e-4;
 opts.weightDecay = 1e-5;
 
 % Fixed Edge-ManiELM configuration
-opts.splineOrder = 8;      
-opts.knotMode    = 1;      
-opts.useSmooth   = 1;      
-opts.baseMode    = 3;     
-opts.baseDecay   = 1e-5;
+opts.basisMode = 'mixed_quadratic_cubic_bspline';
+opts.knotMode  = 'quantile_nonuniform';
+
+opts.useSmooth = 1;
+opts.baseMode  = 'silu_input_bypass';
+opts.baseDecay = 1e-5;
 
 opts.smoothLambda = 1e-4;
 
@@ -88,7 +91,7 @@ for fold = 1:numFolds
     coordTrain = coord(trainMask, :)';
 
     %% Normalize data
-    % Edge-ManiELM internally uses column-wise samples.
+    % Normalization parameters are learned only from the training subset.
 
     [PTrain, inputPS] = mapminmax(XTrain', -1, 1);
     PTest = mapminmax('apply', XTest', inputPS);
@@ -141,7 +144,8 @@ for fold = 1:numFolds
         trainScores.MinRelErr];
 
     %% Save fold model
-    % This is useful when checking a specific fold later.
+    % The stored model can be used for simple fold-level checking.
+
     model = struct();
     model.KAN = KAN;
     model.LW = LW;
@@ -226,7 +230,9 @@ function coord = load_sample_coordinates(fileName, numSamples)
 
     S = load(fileName);
 
-    if isfield(S, 'data_zuobiao')
+    if isfield(S, 'data_geo')
+        coord0 = S.data_geo;
+    elseif isfield(S, 'data_zuobiao')
         coord0 = S.data_zuobiao;
     else
         names = fieldnames(S);
